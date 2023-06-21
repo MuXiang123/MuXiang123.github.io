@@ -23,24 +23,23 @@
 <meta property="og:site_name" content="MuXiang Blog">
 <meta property="og:description" content="1、简述netty是一个异步事件驱动的网络应用程序框架，用于快速开发可维护的高性能协议服务器和客户端  netty.io 2、为什么使用nettyNIO缺点 api繁杂， 需要熟悉java多线程，网络编程 epoll bug会导致selector空轮询，最终导致cpu 100%  netty优点 api简单 支持多种协议 性能高 社区活跃  3、架构  绿色 core：零拷贝、api库、可扩展事件">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230306195432035.png">
-<meta property="og:image" content="https://pic4.zhimg.com/80/v2-7eefba893a65706eb6bbe4115cbd0b83_720w.webp">
-<meta property="og:image" content="https://pic1.zhimg.com/80/v2-aa144d6ad2688f69b0f5ef7dc916a3f4_720w.webp">
-<meta property="og:image" content="https://pic4.zhimg.com/80/v2-e6bc4dec6eecb3ae30f55c7a6487e1f7_720w.webp">
-<meta property="og:image" content="https://pic1.zhimg.com/80/v2-dab6b780993979fcb86ef14553c16720_720w.webp">
-<meta property="og:image" content="https://pic4.zhimg.com/80/v2-dd3a866c356ee7bd24d23319d08116ef_720w.webp">
-<meta property="og:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230307193519223.png">
-<meta property="og:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230307193528870.png">
-<meta property="og:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230307193637688.png">
-<meta property="og:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230307193702314.png">
-<meta property="og:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230307193734269.png">
+<meta property="og:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230306195432035.png">
+<meta property="og:image" content="https://pic1.zhimage.com/80/v2-aa144d6ad2688f69b0f5ef7dc916a3f4_720w.webp">
+<meta property="og:image" content="https://pic4.zhimage.com/80/v2-e6bc4dec6eecb3ae30f55c7a6487e1f7_720w.webp">
+<meta property="og:image" content="https://pic1.zhimage.com/80/v2-dab6b780993979fcb86ef14553c16720_720w.webp">
+<meta property="og:image" content="https://pic4.zhimage.com/80/v2-dd3a866c356ee7bd24d23319d08116ef_720w.webp">
+<meta property="og:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230307193519223.png">
+<meta property="og:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230307193528870.png">
+<meta property="og:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230307193637688.png">
+<meta property="og:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230307193702314.png">
+<meta property="og:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230307193734269.png">
 <meta property="article:published_time" content="2023-06-21T12:32:47.000Z">
-<meta property="article:modified_time" content="2023-06-21T12:53:00.804Z">
+<meta property="article:modified_time" content="2023-06-21T13:12:43.154Z">
 <meta property="article:author" content="HuanKang Zeng">
 <meta property="article:tag" content="Netty">
 <meta property="article:tag" content="java">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://muxiang123.github.io/img/netty%E5%85%A5%E9%97%A8/image-20230306195432035.png">
+<meta name="twitter:image" content="http://muxiang123.github.io/image/netty%E5%85%A5%E9%97%A8/image-20230306195432035.png">
   
   
   
@@ -300,13 +299,13 @@
 <li>性能高</li>
 <li>社区活跃</li>
 </ul>
-<h2 id="3、架构"><a href="#3、架构" class="headerlink" title="3、架构"></a>3、架构</h2><p><img src="/img/netty%E5%85%A5%E9%97%A8/image-20230306195432035.png" srcset="/img/loading.gif" lazyload alt="image-20230306195432035"></p>
+<h2 id="3、架构"><a href="#3、架构" class="headerlink" title="3、架构"></a>3、架构</h2><p><img src="/image/netty%E5%85%A5%E9%97%A8/image-20230306195432035.png" srcset="/img/loading.gif" lazyload alt="image-20230306195432035"></p>
 <ol>
 <li><strong>绿色 core</strong>：零拷贝、api库、可扩展事件模型</li>
 <li><strong>黄色 protocol Support协议</strong> 包括http、websocket ssl等等</li>
 <li><strong>红色 传输服务</strong> socket http tunnel等等</li>
 </ol>
-<h2 id="4、hello-word"><a href="#4、hello-word" class="headerlink" title="4、hello word"></a>4、hello word</h2><img src="https://pic4.zhimg.com/80/v2-7eefba893a65706eb6bbe4115cbd0b83_720w.webp" srcset="/img/loading.gif" lazyload alt="img" style="zoom: 80%;" />
+<h2 id="4、hello-word"><a href="#4、hello-word" class="headerlink" title="4、hello word"></a>4、hello word</h2><image src="https://pic4.zhimage.com/80/v2-7eefba893a65706eb6bbe4115cbd0b83_720w.webp" alt="image" style="zoom: 80%;" />
 
 <p>根据上面图上的模型进行编写hello word，</p>
 <h3 id="4-1-创建服务端启动类"><a href="#4-1-创建服务端启动类" class="headerlink" title="4.1 创建服务端启动类"></a>4.1 创建服务端启动类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyServer</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        <span class="hljs-comment">//创建两个线程组 boosGroup、workerGroup</span><br>        <span class="hljs-type">EventLoopGroup</span> <span class="hljs-variable">bossGroup</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NioEventLoopGroup</span>();<br>        <span class="hljs-type">EventLoopGroup</span> <span class="hljs-variable">workerGroup</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NioEventLoopGroup</span>();<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-comment">//创建服务端的启动对象，设置参数</span><br>            <span class="hljs-type">ServerBootstrap</span> <span class="hljs-variable">bootstrap</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ServerBootstrap</span>();<br>            <span class="hljs-comment">//设置两个线程组boosGroup和workerGroup</span><br>            bootstrap.group(bossGroup, workerGroup)<br>                <span class="hljs-comment">//设置服务端通道实现类型    </span><br>                .channel(NioServerSocketChannel.class)<br>                <span class="hljs-comment">//设置线程队列得到连接个数    </span><br>                .option(ChannelOption.SO_BACKLOG, <span class="hljs-number">128</span>)<br>                <span class="hljs-comment">//设置保持活动连接状态    </span><br>                .childOption(ChannelOption.SO_KEEPALIVE, <span class="hljs-literal">true</span>)<br>                <span class="hljs-comment">//使用匿名内部类的形式初始化通道对象    </span><br>                .childHandler(<span class="hljs-keyword">new</span> <span class="hljs-title class_">ChannelInitializer</span>&lt;SocketChannel&gt;() &#123;<br>                        <span class="hljs-meta">@Override</span><br>                        <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">initChannel</span><span class="hljs-params">(SocketChannel socketChannel)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>                            <span class="hljs-comment">//给pipeline管道设置处理器</span><br>                            socketChannel.pipeline().addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MyServerHandler</span>());<br>                        &#125;<br>                    &#125;);<span class="hljs-comment">//给workerGroup的EventLoop对应的管道设置处理器</span><br>            System.out.println(<span class="hljs-string">&quot;java技术爱好者的服务端已经准备就绪...&quot;</span>);<br>            <span class="hljs-comment">//绑定端口号，启动服务端</span><br>            <span class="hljs-type">ChannelFuture</span> <span class="hljs-variable">channelFuture</span> <span class="hljs-operator">=</span> bootstrap.bind(<span class="hljs-number">6666</span>).sync();<br>            <span class="hljs-comment">//对关闭通道进行监听</span><br>            channelFuture.channel().closeFuture().sync();<br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            bossGroup.shutdownGracefully();<br>            workerGroup.shutdownGracefully();<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
@@ -319,9 +318,9 @@
 
 <h3 id="4-5测试"><a href="#4-5测试" class="headerlink" title="4.5测试"></a>4.5测试</h3><p>先运行server再运行client</p>
 <p>MyServer打印结果:</p>
-<p><img src="https://pic1.zhimg.com/80/v2-aa144d6ad2688f69b0f5ef7dc916a3f4_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://pic1.zhimage.com/80/v2-aa144d6ad2688f69b0f5ef7dc916a3f4_720w.webp" srcset="/img/loading.gif" lazyload alt="image"></p>
 <p>MyClient打印结果：</p>
-<p><img src="https://pic4.zhimg.com/80/v2-e6bc4dec6eecb3ae30f55c7a6487e1f7_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://pic4.zhimage.com/80/v2-e6bc4dec6eecb3ae30f55c7a6487e1f7_720w.webp" srcset="/img/loading.gif" lazyload alt="image"></p>
 <h2 id="5、netty的特性和重要组件"><a href="#5、netty的特性和重要组件" class="headerlink" title="5、netty的特性和重要组件"></a>5、netty的特性和重要组件</h2><h3 id="5-1-taskQueue任务队列"><a href="#5-1-taskQueue任务队列" class="headerlink" title="5.1 taskQueue任务队列"></a>5.1 taskQueue任务队列</h3><p>如果handler出来又一些长时间的业务处理，那么可以交给taskQueue异步处理。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MyServerHandler</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ChannelInboundHandlerAdapter</span> &#123;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">channelRead</span><span class="hljs-params">(ChannelHandlerContext ctx, Object msg)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        <span class="hljs-comment">//获取到线程池eventLoop，添加线程，执行</span><br>        ctx.channel().eventLoop().execute(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">//长时间操作，不至于长时间的业务操作导致Handler阻塞</span><br>                    Thread.sleep(<span class="hljs-number">1000</span>);<br>                    System.out.println(<span class="hljs-string">&quot;长时间的业务处理&quot;</span>);<br>                &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                    e.printStackTrace();<br>                &#125;<br>            &#125;<br>        &#125;);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
 
@@ -334,10 +333,10 @@
 <p>很多操作都返回这个ChannelFuture对象，究竟这个ChannelFuture对象是用来做什么的呢？</p>
 <p>ChannelFuture提供操作完成时一种异步通知的方式。一般在Socket编程中，等待响应结果都是同步阻塞的，而Netty则不会造成阻塞，因为ChannelFuture是采取类似观察者模式的形式进行获取结果。请看一段代码演示：</p>
 <h3 id="5-4-BootStrap-和ServerBootStrap"><a href="#5-4-BootStrap-和ServerBootStrap" class="headerlink" title="5.4 BootStrap 和ServerBootStrap"></a>5.4 BootStrap 和ServerBootStrap</h3><p>Bootstrap和ServerBootStrap是Netty提供的一个创建客户端和服务端启动器的工厂类，使用这个工厂类非常便利地创建启动类，根据上面的一些例子，其实也看得出来能大大地减少了开发的难度。首先看一个类图：</p>
-<p><img src="https://pic1.zhimg.com/80/v2-dab6b780993979fcb86ef14553c16720_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://pic1.zhimage.com/80/v2-dab6b780993979fcb86ef14553c16720_720w.webp" srcset="/img/loading.gif" lazyload alt="image"></p>
 <p>可以看出都是继承于AbstractBootStrap抽象类，所以大致上的配置方法都相同。</p>
 <p>一般来说，使用Bootstrap创建启动器的步骤可分为以下几步：</p>
-<p><img src="https://pic4.zhimg.com/80/v2-dd3a866c356ee7bd24d23319d08116ef_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><img src="https://pic4.zhimage.com/80/v2-dd3a866c356ee7bd24d23319d08116ef_720w.webp" srcset="/img/loading.gif" lazyload alt="image"></p>
 <h4 id="1）-group"><a href="#1）-group" class="headerlink" title="1） group()"></a>1） group()</h4><p>服务端要使用两个线程组：</p>
 <ul>
 <li>bossGroup 用于监听客户端连接，专门负责与客户端创建连接，并且把连接注册到workerGroup的Selector中。</li>
@@ -425,16 +424,16 @@
 <h3 id="6、Selector"><a href="#6、Selector" class="headerlink" title="6、Selector"></a>6、Selector</h3><p>在NioEventLoop中，有一个成员变量selector，这是nio包的Selector，在之前<a href="https://link.zhihu.com/?target=https://mp.weixin.qq.com/s/GfV9w2B0mbT7PmeBS45xLw">《NIO入门》</a>中，我已经讲过Selector了。</p>
 <p>Netty中的Selector也和NIO的Selector是一样的，就是用于监听事件，管理注册到Selector中的channel，实现多路复用器。</p>
 <h3 id="7、PiPeline与ChannelPipeline"><a href="#7、PiPeline与ChannelPipeline" class="headerlink" title="7、PiPeline与ChannelPipeline"></a>7、PiPeline与ChannelPipeline</h3><p>我们知道可以在channel中装配ChannelHandler流水线处理器，那一个channel不可能只有一个channelHandler处理器，肯定是有很多的，既然是很多channelHandler在一个流水线工作，肯定是有顺序的。</p>
-<p><img src="/img/netty%E5%85%A5%E9%97%A8/image-20230307193519223.png" srcset="/img/loading.gif" lazyload alt="image-20230307193519223"></p>
+<p><img src="/image/netty%E5%85%A5%E9%97%A8/image-20230307193519223.png" srcset="/img/loading.gif" lazyload alt="image-20230307193519223"></p>
 <p>于是pipeline就出现了，pipeline相当于处理器的容器。初始化channel时，把channelHandler按顺序装在pipeline中，就可以实现按序执行channelHandler了。</p>
-<p><img src="/img/netty%E5%85%A5%E9%97%A8/image-20230307193528870.png" srcset="/img/loading.gif" lazyload alt="image-20230307193528870"></p>
+<p><img src="/image/netty%E5%85%A5%E9%97%A8/image-20230307193528870.png" srcset="/img/loading.gif" lazyload alt="image-20230307193528870"></p>
 <p>在一个Channel中，只有一个ChannelPipeline。该pipeline在Channel被创建的时候创建。ChannelPipeline包含了一个ChannelHander形成的列表，且所有ChannelHandler都会注册到ChannelPipeline中。</p>
 <h3 id="8、ChannelHandlerContext"><a href="#8、ChannelHandlerContext" class="headerlink" title="8、ChannelHandlerContext"></a>8、ChannelHandlerContext</h3><p>在Netty中，Handler处理器是有我们定义的，上面讲过通过集成入站处理器或者出站处理器实现。这时如果我们想在Handler中获取pipeline对象，或者channel对象，怎么获取呢。</p>
 <p>于是Netty设计了这个ChannelHandlerContext上下文对象，就可以拿到channel、pipeline等对象，就可以进行读写等操作。</p>
-<p><img src="/img/netty%E5%85%A5%E9%97%A8/image-20230307193637688.png" srcset="/img/loading.gif" lazyload alt="image-20230307193637688"></p>
+<p><img src="/image/netty%E5%85%A5%E9%97%A8/image-20230307193637688.png" srcset="/img/loading.gif" lazyload alt="image-20230307193637688"></p>
 <p>通过类图，ChannelHandlerContext是一个接口，下面有三个实现类。</p>
-<p><img src="/img/netty%E5%85%A5%E9%97%A8/image-20230307193702314.png" srcset="/img/loading.gif" lazyload alt="image-20230307193702314"></p>
-<h3 id="9、EventLoopGroup"><a href="#9、EventLoopGroup" class="headerlink" title="9、EventLoopGroup"></a>9、EventLoopGroup</h3><p><img src="/img/netty%E5%85%A5%E9%97%A8/image-20230307193734269.png" srcset="/img/loading.gif" lazyload alt="image-20230307193734269"></p>
+<p><img src="/image/netty%E5%85%A5%E9%97%A8/image-20230307193702314.png" srcset="/img/loading.gif" lazyload alt="image-20230307193702314"></p>
+<h3 id="9、EventLoopGroup"><a href="#9、EventLoopGroup" class="headerlink" title="9、EventLoopGroup"></a>9、EventLoopGroup</h3><p><img src="/image/netty%E5%85%A5%E9%97%A8/image-20230307193734269.png" srcset="/img/loading.gif" lazyload alt="image-20230307193734269"></p>
 <p>其中包括了常用的实现类NioEventLoopGroup。OioEventLoopGroup在前面的例子中也有使用过。</p>
 <p>从Netty的架构图中，可以知道服务器是需要两个线程组进行配合工作的，而这个线程组的接口就是EventLoopGroup。</p>
 <p>每个EventLoopGroup里包括一个或多个EventLoop，每个EventLoop中维护一个Selector实例。</p>
@@ -533,9 +532,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/06/21/hello-world/" title="Hello World">
+                      <a href="/2023/06/21/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4%E3%80%8A%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E4%B8%8E%E5%AE%9E%E6%88%98%E3%80%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B03/" title="极客时间《netty源码剖析与实战》学习笔记2">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Hello World</span>
+                        <span class="hidden-mobile">极客时间《netty源码剖析与实战》学习笔记2</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     

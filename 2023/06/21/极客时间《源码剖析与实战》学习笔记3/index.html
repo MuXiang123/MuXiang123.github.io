@@ -1,0 +1,838 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="HuanKang Zeng">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="7.Netty的锁分析同步问题的三要素 原子性，线程切换带来原子性问题 可见性，缓存带来的可见性问题 有序性，编译优化产生有序性问题  锁的分类 对竞争的态度：乐观锁（java.util.concurrent 包中的原子类）、悲观锁（Synchronized） 对等待锁是否公平：公平锁 new ReentrantLock (true)、非公平锁 new ReentrantLock () 是否可以共">
+<meta property="og:type" content="article">
+<meta property="og:title" content="极客时间《netty源码剖析与实战》学习笔记2">
+<meta property="og:url" content="http://muxiang123.github.io/2023/06/21/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4%E3%80%8A%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E4%B8%8E%E5%AE%9E%E6%88%98%E3%80%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B03/index.html">
+<meta property="og:site_name" content="MuXiang Blog">
+<meta property="og:description" content="7.Netty的锁分析同步问题的三要素 原子性，线程切换带来原子性问题 可见性，缓存带来的可见性问题 有序性，编译优化产生有序性问题  锁的分类 对竞争的态度：乐观锁（java.util.concurrent 包中的原子类）、悲观锁（Synchronized） 对等待锁是否公平：公平锁 new ReentrantLock (true)、非公平锁 new ReentrantLock () 是否可以共">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-24033f5c31a99b059aed60d35260ce08_720w.webp">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-ece282236aabb36fc72e58da1a537504_720w.webp">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-032a9d1466742df6f8fe5ce13087058b_720w.webp">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-c806e34d4d7e9f8667b0fc60a9d6bb19_720w.webp">
+<meta property="og:image" content="https://pic2.zhimg.com/80/v2-aa171f49bd974476c51f632729e259a9_720w.webp">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-53dde61eb68bc34d7e595421281a3d0c_720w.webp">
+<meta property="article:published_time" content="2023-06-21T13:03:58.000Z">
+<meta property="article:modified_time" content="2023-06-21T13:12:43.154Z">
+<meta property="article:author" content="HuanKang Zeng">
+<meta property="article:tag" content="Netty">
+<meta property="article:tag" content="极客时间">
+<meta property="article:tag" content="源码">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pic1.zhimg.com/80/v2-24033f5c31a99b059aed60d35260ce08_720w.webp">
+  
+  
+  
+  <title>极客时间《netty源码剖析与实战》学习笔记2 - MuXiang Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"muxiang123.github.io","root":"/","version":"1.9.4","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>MuXiang Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/background.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="极客时间《netty源码剖析与实战》学习笔记2"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-06-21 21:03" pubdate>
+          2023年6月21日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          91 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">极客时间《netty源码剖析与实战》学习笔记2</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="7-Netty的锁"><a href="#7-Netty的锁" class="headerlink" title="7.Netty的锁"></a><strong>7.Netty的锁</strong></h2><h3 id="分析同步问题的三要素"><a href="#分析同步问题的三要素" class="headerlink" title="分析同步问题的三要素"></a><strong>分析同步问题的三要素</strong></h3><ul>
+<li>原子性，线程切换带来原子性问题</li>
+<li>可见性，缓存带来的可见性问题</li>
+<li>有序性，编译优化产生有序性问题</li>
+</ul>
+<h3 id="锁的分类"><a href="#锁的分类" class="headerlink" title="锁的分类"></a><strong>锁的分类</strong></h3><ul>
+<li>对竞争的态度：乐观锁（java.util.concurrent 包中的原子类）、悲观锁（Synchronized）</li>
+<li>对等待锁是否公平：公平锁 new ReentrantLock (true)、非公平锁 new ReentrantLock ()</li>
+<li>是否可以共享：共享锁与独享锁：ReadWriteLock ，其读锁是共享锁，其写锁是独享</li>
+</ul>
+<h2 id="Netty中使用锁的五个关键点"><a href="#Netty中使用锁的五个关键点" class="headerlink" title="Netty中使用锁的五个关键点"></a><strong>Netty中使用锁的五个关键点</strong></h2><h3 id="注意锁的范围和-gt-减少粒度"><a href="#注意锁的范围和-gt-减少粒度" class="headerlink" title="注意锁的范围和-&gt;减少粒度"></a><strong>注意锁的范围和-&gt;减少粒度</strong></h3><p>初始化 channel （io.netty.bootstrap.ServerBootstrap#init） Synchronized method -&gt; Synchronized block 不是将整个方法加锁，而是在代码块上加锁。</p>
+<p>对于option0和attrs0两个不会出现线程安全问题的代码不加锁。</p>
+<p><img src="https://pic1.zhimg.com/80/v2-24033f5c31a99b059aed60d35260ce08_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="注意锁对象本身的大小-gt-减少空间占用"><a href="#注意锁对象本身的大小-gt-减少空间占用" class="headerlink" title="注意锁对象本身的大小-&gt;减少空间占用"></a><strong>注意锁对象本身的大小-&gt;减少空间占用</strong></h3><p>统计待发送的字节数（io.netty.channel.ChannelOutboundBuffer AtomicLong -&gt; Volatile long + AtomicLongFieldUpdater</p>
+<p><img src="https://pic1.zhimg.com/80/v2-ece282236aabb36fc72e58da1a537504_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>看似代码变复杂了，而且没用。但是从对象所占用的字节数方面来看：</p>
+<p>Atomic long VS long：</p>
+<p>前者是一个对象，包含对象头（object header）以用来保存 hashcode、lock 等信息，32 位系统占 用8字节；64 位系统占 16 字节，所以在 64 位系统情况下：</p>
+<ul>
+<li>volatile long &#x3D; 8 bytes</li>
+<li>AtomicLong &#x3D; 8 bytes （volatile long）+ 16bytes （对象头）+ 8 bytes (引用，不一定是8字节，因为会存在指针压缩等优化) &#x3D; 32 bytes</li>
+</ul>
+<p>至少节约 24 字节!</p>
+<blockquote>
+<p>结论：Atomic* objects -&gt; Volatile primary type + Static Atomic*FieldUpdater</p>
+</blockquote>
+<h3 id="注意锁的速度-gt-提高并发性"><a href="#注意锁的速度-gt-提高并发性" class="headerlink" title="注意锁的速度-&gt;提高并发性"></a><strong>注意锁的速度-&gt;提高并发性</strong></h3><p>netty可以根据不同情况，选择不同的并发包实现。</p>
+<p>当JDK &lt; 1.8时，使用ConcurrentHashMapV8（ConcurrentHashMap 在 JDK8 中的版本）jdk8的实现拷贝到了netty中（现在netty中没有了）。</p>
+<p><img src="https://pic4.zhimg.com/80/v2-032a9d1466742df6f8fe5ce13087058b_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<h3 id="不同场景下选择不同的并发包-gt-因需而变"><a href="#不同场景下选择不同的并发包-gt-因需而变" class="headerlink" title="不同场景下选择不同的并发包-&gt;因需而变"></a><strong>不同场景下选择不同的并发包-&gt;因需而变</strong></h3><ol>
+<li>关闭和等待关闭事件执行器（Event Execute）</li>
+</ol>
+<p>Object.wait&#x2F;notify -&gt; CountDownLatch</p>
+<p>io.netty.util.concurrent.SingleThreadEventExecutor#threadLock：</p>
+<p><img src="https://pic2.zhimg.com/80/v2-c806e34d4d7e9f8667b0fc60a9d6bb19_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p><strong>Object.wait&#x2F;notify</strong> 需要把要执行的语句放到一个监视器中。</p>
+<ol>
+<li>Nio Event loop中负责存储task的<br>Queue Jdk’s LinkedBlockingQueue <strong>(MPMC多生产者多消费者模式</strong>) -&gt; jctools’ <strong>MPSC(多生产者单消费者模式)</strong> io.netty.util.internal.PlatformDependent.Mpsc#newMpscQueue(int)：</li>
+</ol>
+<p>对于Event loop来说，它只绑定了一个线程，所以只有一个消费者。</p>
+<p>说明优化的基础是建立在具体的场景上的。</p>
+<h3 id="衡量好锁的价值-gt-能不用则不用"><a href="#衡量好锁的价值-gt-能不用则不用" class="headerlink" title="衡量好锁的价值-&gt;能不用则不用"></a><strong>衡量好锁的价值-&gt;能不用则不用</strong></h3><ol>
+<li>局部串行：netty对于每个连接而言，都是一个串行化操作。Channel 的 I&#x2F;O 请求处理 Pipeline 是串行的</li>
+</ol>
+<p><img src="https://pic2.zhimg.com/80/v2-aa171f49bd974476c51f632729e259a9_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<ol>
+<li>整体并行：多个串行化的线程（NioEventLoop）</li>
+</ol>
+<p><img src="https://pic1.zhimg.com/80/v2-53dde61eb68bc34d7e595421281a3d0c_720w.webp" srcset="/img/loading.gif" lazyload alt="img"></p>
+<p>Netty 应用场景下：局部串行 + 整体并行 &gt; 一个队列 + 多个线程模式:</p>
+<ul>
+<li>降低用户开发难度、逻辑简单、提升处理性能</li>
+<li>避免锁带来的上下文切换和并发保护等额外开销</li>
+</ul>
+<ol>
+<li>避免用锁： 用 ThreadLocal 来避免资源争用，例如 Netty 轻量级的线程池实</li>
+</ol>
+<h2 id="8-Netty如何玩转内存使用"><a href="#8-Netty如何玩转内存使用" class="headerlink" title="8.Netty如何玩转内存使用"></a><strong>8.Netty如何玩转内存使用</strong></h2><p>内存使用的目标：</p>
+<ul>
+<li>内存占用少</li>
+<li>应用速度快</li>
+</ul>
+<p>对于java而言:减少Full GC的STWW（Stop the world）时间</p>
+<h3 id="减少对像本身大小"><a href="#减少对像本身大小" class="headerlink" title="减少对像本身大小"></a><strong>减少对像本身大小</strong></h3><ul>
+<li>用基本类型就不要用包装类</li>
+<li>应该定义成类变量的不要定义为实例变量</li>
+</ul>
+<h3 id="对分配内存进行预估"><a href="#对分配内存进行预估" class="headerlink" title="对分配内存进行预估"></a><strong>对分配内存进行预估</strong></h3><ul>
+<li>对于已经可以预知固定 size 的 HashMap避免扩容 可以提前计算好初始size或者直接使用</li>
+</ul>
+<p>com.google.common.collect.Maps#newHashMapWithExpectedSize</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;K, V&gt; HashMap&lt;K, V&gt; <span class="hljs-title function_">newHashMapWithExpectedSize</span><span class="hljs-params">(<span class="hljs-type">int</span> expectedSize)</span> &#123;<br>    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>(capacity(expectedSize));<br>&#125;<br><br><span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">capacity</span><span class="hljs-params">(<span class="hljs-type">int</span> expectedSize)</span> &#123;<br>    <span class="hljs-keyword">if</span> (expectedSize &lt; <span class="hljs-number">3</span>) &#123;<br>        CollectPreconditions.checkNonnegative(expectedSize, <span class="hljs-string">&quot;expectedSize&quot;</span>);<br>        <span class="hljs-keyword">return</span> expectedSize + <span class="hljs-number">1</span>;<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        <span class="hljs-keyword">return</span> expectedSize &lt; <span class="hljs-number">1073741824</span> ? (<span class="hljs-type">int</span>)((<span class="hljs-type">float</span>)expectedSize / <span class="hljs-number">0.75F</span> + <span class="hljs-number">1.0F</span>) : <span class="hljs-number">2147483647</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>Netty 根据接受到的数据动态调整（guess）下个要分配的 Buffer 的大小。可参考 io.netty.channel.AdaptiveRecvByteBufAllocator</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs java">        <span class="hljs-comment">/**</span><br><span class="hljs-comment">         * 接受数据buffer的容量会尽可能的足够大以接受数据</span><br><span class="hljs-comment">         * 也尽可能的小以不会浪费它的空间</span><br><span class="hljs-comment">         * <span class="hljs-doctag">@param</span> actualReadBytes</span><br><span class="hljs-comment">         */</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">record</span><span class="hljs-params">(<span class="hljs-type">int</span> actualReadBytes)</span> &#123;<br>    <span class="hljs-comment">//尝试是否可以减小分配的空间仍然能满足需求：</span><br>    <span class="hljs-comment">//尝试方法：当前实际读取的size是否小于或等于打算缩小的尺寸</span><br>    <span class="hljs-keyword">if</span> (actualReadBytes &lt;= SIZE_TABLE[max(<span class="hljs-number">0</span>, index - INDEX_DECREMENT - <span class="hljs-number">1</span>)]) &#123;<br>        <span class="hljs-comment">//decreaseNow: 连续2次尝试减小都可以</span><br>        <span class="hljs-keyword">if</span> (decreaseNow) &#123;<br>            <span class="hljs-comment">//减小</span><br>            index = max(index - INDEX_DECREMENT, minIndex);<br>            nextReceiveBufferSize = SIZE_TABLE[index];<br>            decreaseNow = <span class="hljs-literal">false</span>;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            decreaseNow = <span class="hljs-literal">true</span>;<br>        &#125;<br>        <span class="hljs-comment">//判断是否实际读取的数据大于等于预估的，如果是，尝试扩容</span><br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (actualReadBytes &gt;= nextReceiveBufferSize) &#123;<br>        index = min(index + INDEX_INCREMENT, maxIndex);<br>        nextReceiveBufferSize = SIZE_TABLE[index];<br>        decreaseNow = <span class="hljs-literal">false</span>;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="Zero-Copy-零复制"><a href="#Zero-Copy-零复制" class="headerlink" title="Zero-Copy 零复制"></a><strong>Zero-Copy 零复制</strong></h3><p>使用逻辑组合，代替实际复制。 例如 CompositeByteBuf： io.netty.handler.codec.ByteToMessageDecoder#COMPOSITE_CUMULATOR 避免了内存的复制而将数据组合到一起。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Cumulator</span> <span class="hljs-variable">COMPOSITE_CUMULATOR</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Cumulator</span>() &#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> ByteBuf <span class="hljs-title function_">cumulate</span><span class="hljs-params">(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf in)</span> &#123;<br>        ByteBuf buffer;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-keyword">if</span> (cumulation.refCnt() &gt; <span class="hljs-number">1</span>) &#123;<br>                <span class="hljs-comment">// Expand cumulation (by replace it) when the refCnt is greater then 1 which may happen when the</span><br>                <span class="hljs-comment">// user use slice().retain() or duplicate().retain().</span><br>                <span class="hljs-comment">//</span><br>                <span class="hljs-comment">// See:</span><br>                <span class="hljs-comment">// - https://github.com/netty/netty/issues/2327</span><br>                <span class="hljs-comment">// - https://github.com/netty/netty/issues/1764</span><br>                buffer = expandCumulation(alloc, cumulation, in.readableBytes());<br>                buffer.writeBytes(in);<br>            &#125; <span class="hljs-keyword">else</span> &#123;<br>                CompositeByteBuf composite;<br><br>                <span class="hljs-comment">//创建composite bytebuf，如果已经创建过，就不用了</span><br>                <span class="hljs-keyword">if</span> (cumulation <span class="hljs-keyword">instanceof</span> CompositeByteBuf) &#123;<br>                    composite = (CompositeByteBuf) cumulation;<br>                &#125; <span class="hljs-keyword">else</span> &#123;<br>                    composite = alloc.compositeBuffer(Integer.MAX_VALUE);<br>                    composite.addComponent(<span class="hljs-literal">true</span>, cumulation);<br>                &#125;<br>                <span class="hljs-comment">//避免内存复制</span><br>                composite.addComponent(<span class="hljs-literal">true</span>, in);<br>                in = <span class="hljs-literal">null</span>;<br>                buffer = composite;<br>            &#125;<br>            <span class="hljs-keyword">return</span> buffer;<br>        &#125; <span class="hljs-keyword">finally</span> &#123;<br>            <span class="hljs-keyword">if</span> (in != <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-comment">// We must release if the ownership was not transferred as otherwise it may produce a leak if</span><br>                <span class="hljs-comment">// writeBytes(...) throw for whatever release (for example because of OutOfMemoryError).</span><br>                in.release();<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>使用包装，代替实际复制。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">byte</span>[] bytes = data.getBytes();  <br><br><span class="hljs-type">ByteBuf</span> <span class="hljs-variable">byteBuf</span> <span class="hljs-operator">=</span> Unpooled.wrappedBuffer(bytes)<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>调用 JDK 的 Zero-Copy 接口。 Netty 中也通过在 DefaultFileRegion 中包装了 NIO 的 FileChannel.transferTo() 方法实 现了零拷贝：io.netty.channel.DefaultFileRegion#transferTo</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-type">long</span> <span class="hljs-title function_">transferTo</span><span class="hljs-params">(WritableByteChannel target, <span class="hljs-type">long</span> position)</span> <span class="hljs-keyword">throws</span> IOException &#123;<br>    <span class="hljs-type">long</span> <span class="hljs-variable">count</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.count - position;<br>    <span class="hljs-keyword">if</span> (count &lt; <span class="hljs-number">0</span> || position &lt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<br>                <span class="hljs-string">&quot;position out of range: &quot;</span> + position +<br>                <span class="hljs-string">&quot; (expected: 0 - &quot;</span> + (<span class="hljs-built_in">this</span>.count - <span class="hljs-number">1</span>) + <span class="hljs-string">&#x27;)&#x27;</span>);<br>    &#125;<br>    <span class="hljs-keyword">if</span> (count == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-number">0L</span>;<br>    &#125;<br>    <span class="hljs-keyword">if</span> (refCnt() == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalReferenceCountException</span>(<span class="hljs-number">0</span>);<br>    &#125;<br>    <span class="hljs-comment">// Call open to make sure fc is initialized. This is a no-oop if we called it before.</span><br>    open();<br><br>    <span class="hljs-type">long</span> <span class="hljs-variable">written</span> <span class="hljs-operator">=</span> file.transferTo(<span class="hljs-built_in">this</span>.position + position, count, target);<br>    <span class="hljs-keyword">if</span> (written &gt; <span class="hljs-number">0</span>) &#123;<br>        transferred += written;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (written == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">// If the amount of written data is 0 we need to check if the requested count is bigger then the</span><br>        <span class="hljs-comment">// actual file itself as it may have been truncated on disk.</span><br>        <span class="hljs-comment">//</span><br>        <span class="hljs-comment">// See https://github.com/netty/netty/issues/8868</span><br>        validate(<span class="hljs-built_in">this</span>, position);<br>    &#125;<br>    <span class="hljs-keyword">return</span> written;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="堆外内存"><a href="#堆外内存" class="headerlink" title="堆外内存"></a><strong>堆外内存</strong></h3><p>堆外内存生活场景：</p>
+<ul>
+<li><p>夏日，小区周边的烧烤店铺，人满为患坐不下，店家常常怎么办？</p>
+</li>
+<li><p>解决思路：店铺门口摆很多桌子招待客人。</p>
+</li>
+<li><ul>
+<li>店内 -&gt; JVM 内部 -&gt; 堆（heap) + 非堆（non heap）</li>
+<li>店外 -&gt; JVM 外部 -&gt; 堆外（off heap）</li>
+</ul>
+</li>
+</ul>
+<p>优点：</p>
+<ul>
+<li>更广阔的“空间 ”，缓解店铺内压力 -&gt; 破除堆空间限制，减轻 GC 压力</li>
+<li>减少“冗余”细节（假设烧烤过程为了气氛在室外进行：烤好直接上桌：vs 烤好还 要进店内）-&gt; 避免复制</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>需要搬桌子 -&gt; 创建速度稍慢</li>
+<li>受城管管、风险大 -&gt; 堆外内存受操作系统管理</li>
+</ul>
+<h3 id="内存池"><a href="#内存池" class="headerlink" title="内存池"></a><strong>内存池</strong></h3><p><strong>点菜单的演进：</strong></p>
+<p>• 一张纸：一桌客人一张纸</p>
+<p>• 点菜平板：循环使用</p>
+<p><strong>为什么引入对象池：</strong></p>
+<p>• 创建对象开销大</p>
+<p>• 对象高频率创建且可复用</p>
+<p>• 支持并发又能保护系统</p>
+<p>• 维护、共享有限的资源</p>
+<p><strong>如何实现对象池？</strong></p>
+<p>• 开源实现：Apache Commons Pool （全局共享，资源争用比较厉害）</p>
+<p>• Netty 轻量级对象池实现 io.netty.util.Recycler （基于netty场景实现）</p>
+<h2 id="源码解读Netty内存使用"><a href="#源码解读Netty内存使用" class="headerlink" title="源码解读Netty内存使用"></a><strong>源码解读Netty内存使用</strong></h2><h3 id="内存池-x2F-非内存池的默认选择及切换方式？"><a href="#内存池-x2F-非内存池的默认选择及切换方式？" class="headerlink" title="内存池&#x2F;非内存池的默认选择及切换方式？"></a><strong>内存池&#x2F;非内存池的默认选择及切换方式？</strong></h3><p>以io.netty.allocator.type为准，没有的话，安卓平台用非池化实现，其他用池化实现</p>
+<p><strong>默认使用池化的实现</strong>，可以使用io.netty.allocator.type设置池化或者非池化的实现。 io.netty.channel.DefaultChannelConfig#allocator</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//默认bytebuf分配器</span><br><span class="hljs-keyword">private</span> <span class="hljs-keyword">volatile</span> <span class="hljs-type">ByteBufAllocator</span> <span class="hljs-variable">allocator</span> <span class="hljs-operator">=</span> ByteBufAllocator.DEFAULT;<br></code></pre></td></tr></table></figure>
+
+<p>io.netty.buffer.ByteBufAllocator</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">ByteBufAllocator</span> <span class="hljs-variable">DEFAULT</span> <span class="hljs-operator">=</span> ByteBufUtil.DEFAULT_ALLOCATOR;<br></code></pre></td></tr></table></figure>
+
+<p>io.netty.buffer.ByteBufUtil</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> ByteBufAllocator DEFAULT_ALLOCATOR;<br>    <span class="hljs-keyword">static</span> &#123;<br>        <span class="hljs-comment">//以io.netty.allocator.type为判断标准，没有的话，安卓平台用非池化实现，其他用池化实现。</span><br>        <span class="hljs-type">String</span> <span class="hljs-variable">allocType</span> <span class="hljs-operator">=</span> SystemPropertyUtil.get(<br>                <span class="hljs-string">&quot;io.netty.allocator.type&quot;</span>, PlatformDependent.isAndroid() ? <span class="hljs-string">&quot;unpooled&quot;</span> : <span class="hljs-string">&quot;pooled&quot;</span>);<br>        allocType = allocType.toLowerCase(Locale.US).trim();<br>        ByteBufAllocator alloc;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-string">&quot;unpooled&quot;</span>.equals(allocType)) &#123;<br>            alloc = UnpooledByteBufAllocator.DEFAULT;<br>            logger.debug(<span class="hljs-string">&quot;-Dio.netty.allocator.type: &#123;&#125;&quot;</span>, allocType);<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-string">&quot;pooled&quot;</span>.equals(allocType)) &#123;<br>            alloc = PooledByteBufAllocator.DEFAULT;<br>            logger.debug(<span class="hljs-string">&quot;-Dio.netty.allocator.type: &#123;&#125;&quot;</span>, allocType);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-comment">//io.netty.allocator.type设置的不是&quot;unpooled&quot;或者&quot;pooled&quot;，就用池化实现。</span><br>            alloc = PooledByteBufAllocator.DEFAULT;<br>            logger.debug(<span class="hljs-string">&quot;-Dio.netty.allocator.type: pooled (unknown: &#123;&#125;)&quot;</span>, allocType);<br>        &#125;<br>        DEFAULT_ALLOCATOR = alloc;<br>        THREAD_LOCAL_BUFFER_SIZE = SystemPropertyUtil.getInt(<span class="hljs-string">&quot;io.netty.threadLocalDirectBufferSize&quot;</span>, <span class="hljs-number">0</span>);<br>        logger.debug(<span class="hljs-string">&quot;-Dio.netty.threadLocalDirectBufferSize: &#123;&#125;&quot;</span>, THREAD_LOCAL_BUFFER_SIZE);<br>        MAX_CHAR_BUFFER_SIZE = SystemPropertyUtil.getInt(<span class="hljs-string">&quot;io.netty.maxThreadLocalCharBufferSize&quot;</span>, <span class="hljs-number">16</span> * <span class="hljs-number">1024</span>);<br>        logger.debug(<span class="hljs-string">&quot;-Dio.netty.maxThreadLocalCharBufferSize: &#123;&#125;&quot;</span>, MAX_CHAR_BUFFER_SIZE);<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="两种设置池化实现的方式"><a href="#两种设置池化实现的方式" class="headerlink" title="两种设置池化实现的方式"></a><strong>两种设置池化实现的方式</strong></h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java">.childOption(ChannelOption.ALLOCATOR, UnpooledByteBufAllocator.DEFAULT)<br> <span class="hljs-type">String</span> <span class="hljs-variable">allocType</span> <span class="hljs-operator">=</span> SystemPropertyUtil.get(<br>                <span class="hljs-string">&quot;io.netty.allocator.type&quot;</span>, PlatformDependent.isAndroid() ? <span class="hljs-string">&quot;unpooled&quot;</span> : <span class="hljs-string">&quot;pooled&quot;</span>);<br></code></pre></td></tr></table></figure>
+
+<h3 id="堆外内存的分配本质？内存池实现"><a href="#堆外内存的分配本质？内存池实现" class="headerlink" title="堆外内存的分配本质？内存池实现?"></a><strong>堆外内存的分配本质？内存池实现?</strong></h3><p>io.netty.buffer.PooledDirectByteBuf</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <br>    <span class="hljs-comment">//Recycler就是Netty的轻量级内存池的实现</span><br>    Recycler&lt;PooledDirectByteBuf&gt; RECYCLER = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Recycler</span>&lt;PooledDirectByteBuf&gt;() &#123;<br>        <span class="hljs-meta">@Override</span><br>        <span class="hljs-keyword">protected</span> PooledDirectByteBuf <span class="hljs-title function_">newObject</span><span class="hljs-params">(Handle&lt;PooledDirectByteBuf&gt; handle)</span> &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PooledDirectByteBuf</span>(handle, <span class="hljs-number">0</span>);<br>        &#125;<br>    &#125;;<br>    <span class="hljs-comment">//从“池”里借一个用</span><br>    <span class="hljs-keyword">static</span> PooledDirectByteBuf <span class="hljs-title function_">newInstance</span><span class="hljs-params">(<span class="hljs-type">int</span> maxCapacity)</span> &#123;<br>        <span class="hljs-type">PooledDirectByteBuf</span> <span class="hljs-variable">buf</span> <span class="hljs-operator">=</span> RECYCLER.get();<br>        buf.reuse(maxCapacity);<br>        <span class="hljs-keyword">return</span> buf;<br>    &#125;<br></code></pre></td></tr></table></figure>
+
+<p>io.netty.util.Recycler 从池中取对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> <span class="hljs-keyword">final</span> T <span class="hljs-title function_">get</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">if</span> (maxCapacityPerThread == <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-comment">//表明没有开启池化</span><br>        <span class="hljs-keyword">return</span> newObject((Handle&lt;T&gt;) NOOP_HANDLE);<br>    &#125;<br>    Stack&lt;T&gt; stack = threadLocal.get();<br>    DefaultHandle&lt;T&gt; handle = stack.pop();<br>    <span class="hljs-comment">//试图从“池”中取出一个，没有就新建一个</span><br>    <span class="hljs-keyword">if</span> (handle == <span class="hljs-literal">null</span>) &#123;<br>        handle = stack.newHandle();<br>        handle.value = newObject(handle);<br>    &#125;<br>    <span class="hljs-keyword">return</span> (T) handle.value;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>io.netty.buffer.PooledByteBuf 还对象到池中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">//归还对象到“池”里去，pipeline的tail会调用</span><br><span class="hljs-meta">@Override</span><br><span class="hljs-keyword">protected</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">deallocate</span><span class="hljs-params">()</span> &#123;<br>    <span class="hljs-keyword">if</span> (handle &gt;= <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">final</span> <span class="hljs-type">long</span> <span class="hljs-variable">handle</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.handle;<br>        <span class="hljs-built_in">this</span>.handle = -<span class="hljs-number">1</span>;<br>        memory = <span class="hljs-literal">null</span>;<br>        chunk.arena.free(chunk, tmpNioBuf, handle, maxLength, cache);<br>        tmpNioBuf = <span class="hljs-literal">null</span>;<br>        chunk = <span class="hljs-literal">null</span>;<br>        recycle();<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>io.netty.util.Recycler的default实现，具体写明如何还回到内存池中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">DefaultHandle</span>&lt;T&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Handle</span>&lt;T&gt; &#123;<br>    ......<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">recycle</span><span class="hljs-params">(Object object)</span> &#123;<br>        <span class="hljs-keyword">if</span> (object != value) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">&quot;object does not belong to handle&quot;</span>);<br>        &#125;<br><br>        Stack&lt;?&gt; stack = <span class="hljs-built_in">this</span>.stack;<br>        <span class="hljs-keyword">if</span> (lastRecycledId != recycleId || stack == <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalStateException</span>(<span class="hljs-string">&quot;recycled already&quot;</span>);<br>        &#125;<br>        <span class="hljs-comment">//释放用完的对象到池里面去</span><br>        stack.push(<span class="hljs-built_in">this</span>);<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<h3 id="怎么从堆外内存切换堆内使用？"><a href="#怎么从堆外内存切换堆内使用？" class="headerlink" title="怎么从堆外内存切换堆内使用？"></a><strong>怎么从堆外内存切换堆内使用？</strong></h3><p>io.netty.util.internal.PlatformDependent</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs text">// We should always prefer direct buffers by default if we can use a Cleaner to release direct buffers.<br>//使用堆外内存两个条件：1 有cleaner方法去释放堆外内存； 2 io.netty.noPreferDirect 不能设置为true<br>DIRECT_BUFFER_PREFERRED = CLEANER != NOOP<br>    &amp;&amp; !SystemPropertyUtil.getBoolean(&quot;io.netty.noPreferDirect&quot;, false);<br>if (logger.isDebugEnabled()) &#123;<br>    logger.debug(&quot;-Dio.netty.noPreferDirect: &#123;&#125;&quot;, !DIRECT_BUFFER_PREFERRED);<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>方法 1：参数设置 io.netty.noPreferDirect &#x3D; true;</li>
+<li>方法 2：传入构造参数false<br>ServerBootstrap serverBootStrap &#x3D; new ServerBootstrap();<br>UnpooledByteBufAllocator unpooledByteBufAllocator &#x3D; new UnpooledByteBufAllocator(false); &#x2F;&#x2F;不推荐<br>serverBootStrap.childOption(ChannelOption.ALLOCATOR, unpooledByteBufAllocator)</li>
+</ul>
+<h3 id="堆外内存的分配本质？"><a href="#堆外内存的分配本质？" class="headerlink" title="堆外内存的分配本质？"></a><strong>堆外内存的分配本质？</strong></h3><p>首先在io.netty.buffer.UnpooledByteBufAllocator会先进行判断，是否有hasUnsafe()方法和是否有noCleaner()方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">protected</span> ByteBuf <span class="hljs-title function_">newDirectBuffer</span><span class="hljs-params">(<span class="hljs-type">int</span> initialCapacity, <span class="hljs-type">int</span> maxCapacity)</span> &#123;<br>       <span class="hljs-keyword">final</span> ByteBuf buf;<br>       <span class="hljs-keyword">if</span> (PlatformDependent.hasUnsafe()) &#123;<br>           buf = noCleaner ? <span class="hljs-keyword">new</span> <span class="hljs-title class_">InstrumentedUnpooledUnsafeNoCleanerDirectByteBuf</span>(<span class="hljs-built_in">this</span>, initialCapacity, maxCapacity) :<br>                   <span class="hljs-comment">//大多情况：</span><br>                   <span class="hljs-keyword">new</span> <span class="hljs-title class_">InstrumentedUnpooledUnsafeDirectByteBuf</span>(<span class="hljs-built_in">this</span>, initialCapacity, maxCapacity);<br>       &#125; <span class="hljs-keyword">else</span> &#123;<br>           buf = <span class="hljs-keyword">new</span> <span class="hljs-title class_">InstrumentedUnpooledDirectByteBuf</span>(<span class="hljs-built_in">this</span>, initialCapacity, maxCapacity);<br>       &#125;<br>       <span class="hljs-keyword">return</span> disableLeakDetector ? buf : toLeakAwareBuffer(buf);<br>   &#125;<br></code></pre></td></tr></table></figure>
+
+<p>io.netty.buffer.UnpooledDirectByteBuf#allocateDirect，最终实际调用的是JDK的方法</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Netty/" class="category-chain-item">Netty</a>
+  
+  
+
+      </span>
+    
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/" class="category-chain-item">极客时间</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/Netty%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E4%B8%8E%E5%AE%9E%E6%88%98/" class="category-chain-item">Netty源码剖析与实战</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Netty/">#Netty</a>
+      
+        <a href="/tags/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/">#极客时间</a>
+      
+        <a href="/tags/%E6%BA%90%E7%A0%81/">#源码</a>
+      
+        <a href="/tags/Java/">#Java</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>极客时间《netty源码剖析与实战》学习笔记2</div>
+      <div>http://muxiang123.github.io/2023/06/21/极客时间《源码剖析与实战》学习笔记3/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>HuanKang Zeng</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年6月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/06/21/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4%E3%80%8A%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90%E4%B8%8E%E5%AE%9E%E6%88%98%E3%80%8B%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B02/" title="极客时间《netty源码剖析与实战》学习笔记2">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">极客时间《netty源码剖析与实战》学习笔记2</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/06/21/netty%E5%85%A5%E9%97%A8/" title="netty入门">
+                        <span class="hidden-mobile">netty入门</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
