@@ -32,7 +32,7 @@ netty是一个异步事件驱动的网络应用程序框架，用于快速开发
 
 ## 3、架构
 
-![image-20230306195432035](img/netty入门/image-20230306195432035.png)
+![image-20230306195432035](image/netty入门/image-20230306195432035.png)
 
 1. **绿色 core**：零拷贝、api库、可扩展事件模型
 2. **黄色 protocol Support协议** 包括http、websocket ssl等等
@@ -40,7 +40,7 @@ netty是一个异步事件驱动的网络应用程序框架，用于快速开发
 
 ## 4、hello word
 
-<img src="https://pic4.zhimg.com/80/v2-7eefba893a65706eb6bbe4115cbd0b83_720w.webp" alt="img" style="zoom: 80%;" />
+<image src="https://pic4.zhimage.com/80/v2-7eefba893a65706eb6bbe4115cbd0b83_720w.webp" alt="image" style="zoom: 80%;" />
 
 根据上面图上的模型进行编写hello word，
 
@@ -175,13 +175,13 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
 
 MyServer打印结果:
 
-![img](https://pic1.zhimg.com/80/v2-aa144d6ad2688f69b0f5ef7dc916a3f4_720w.webp)
+![image](https://pic1.zhimage.com/80/v2-aa144d6ad2688f69b0f5ef7dc916a3f4_720w.webp)
 
 
 
 MyClient打印结果：
 
-![img](https://pic4.zhimg.com/80/v2-e6bc4dec6eecb3ae30f55c7a6487e1f7_720w.webp)
+![image](https://pic4.zhimage.com/80/v2-e6bc4dec6eecb3ae30f55c7a6487e1f7_720w.webp)
 
 ## 5、netty的特性和重要组件
 
@@ -246,13 +246,13 @@ ChannelFuture提供操作完成时一种异步通知的方式。一般在Socket�
 
 Bootstrap和ServerBootStrap是Netty提供的一个创建客户端和服务端启动器的工厂类，使用这个工厂类非常便利地创建启动类，根据上面的一些例子，其实也看得出来能大大地减少了开发的难度。首先看一个类图：
 
-![img](https://pic1.zhimg.com/80/v2-dab6b780993979fcb86ef14553c16720_720w.webp)
+![image](https://pic1.zhimage.com/80/v2-dab6b780993979fcb86ef14553c16720_720w.webp)
 
 可以看出都是继承于AbstractBootStrap抽象类，所以大致上的配置方法都相同。
 
 一般来说，使用Bootstrap创建启动器的步骤可分为以下几步：
 
-![img](https://pic4.zhimg.com/80/v2-dd3a866c356ee7bd24d23319d08116ef_720w.webp)
+![image](https://pic4.zhimage.com/80/v2-dd3a866c356ee7bd24d23319d08116ef_720w.webp)
 
 #### 1） group()
 
@@ -436,11 +436,11 @@ Netty中的Selector也和NIO的Selector是一样的，就是用于监听事件�
 
 我们知道可以在channel中装配ChannelHandler流水线处理器，那一个channel不可能只有一个channelHandler处理器，肯定是有很多的，既然是很多channelHandler在一个流水线工作，肯定是有顺序的。
 
-![image-20230307193519223](img/netty入门/image-20230307193519223.png)
+![image-20230307193519223](image/netty入门/image-20230307193519223.png)
 
 于是pipeline就出现了，pipeline相当于处理器的容器。初始化channel时，把channelHandler按顺序装在pipeline中，就可以实现按序执行channelHandler了。
 
-![image-20230307193528870](img/netty入门/image-20230307193528870.png)
+![image-20230307193528870](image/netty入门/image-20230307193528870.png)
 
 在一个Channel中，只有一个ChannelPipeline。该pipeline在Channel被创建的时候创建。ChannelPipeline包含了一个ChannelHander形成的列表，且所有ChannelHandler都会注册到ChannelPipeline中。
 
@@ -450,15 +450,15 @@ Netty中的Selector也和NIO的Selector是一样的，就是用于监听事件�
 
 于是Netty设计了这个ChannelHandlerContext上下文对象，就可以拿到channel、pipeline等对象，就可以进行读写等操作。
 
-![image-20230307193637688](img/netty入门/image-20230307193637688.png)
+![image-20230307193637688](image/netty入门/image-20230307193637688.png)
 
 通过类图，ChannelHandlerContext是一个接口，下面有三个实现类。
 
-![image-20230307193702314](img/netty入门/image-20230307193702314.png)
+![image-20230307193702314](image/netty入门/image-20230307193702314.png)
 
 ### 9、EventLoopGroup
 
-![image-20230307193734269](img/netty入门/image-20230307193734269.png)
+![image-20230307193734269](image/netty入门/image-20230307193734269.png)
 
 其中包括了常用的实现类NioEventLoopGroup。OioEventLoopGroup在前面的例子中也有使用过。
 
