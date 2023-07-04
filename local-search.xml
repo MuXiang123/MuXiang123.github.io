@@ -5,12 +5,145 @@
   
   <entry>
     <title>Hello World</title>
-    <link href="/2023/06/21/hello-world/"/>
-    <url>/2023/06/21/hello-world/</url>
+    <link href="/2023/07/04/hello-world/"/>
+    <url>/2023/07/04/hello-world/</url>
     
     <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
     
     
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>手写简易Netty_03——跟踪诊断</title>
+    <link href="/2023/07/04/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-03%E2%80%94%E2%80%94%E8%B7%9F%E8%B8%AA%E8%AF%8A%E6%96%AD/"/>
+    <url>/2023/07/04/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-03%E2%80%94%E2%80%94%E8%B7%9F%E8%B8%AA%E8%AF%8A%E6%96%AD/</url>
+    
+    <content type="html"><![CDATA[<h1 id="跟踪诊断-🕵️‍♂️"><a href="#跟踪诊断-🕵️‍♂️" class="headerlink" title="跟踪诊断 🕵️‍♂️"></a>跟踪诊断 🕵️‍♂️</h1><h2 id="完善线程名-💡"><a href="#完善线程名-💡" class="headerlink" title="完善线程名 💡"></a>完善线程名 💡</h2><p>在dubug模式中能够看见线程后面的数字，数字分别代表的意思是：</p><ul><li><p>2-1 boss group</p></li><li><p>3-1 worker group</p></li></ul><p>为了让我们在调试的时候更清晰的了解到具体是哪个线程，在serve中，添加如下代码：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-type">codeNioEventLoopGroup</span> <span class="hljs-variable">boss</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NioEventLoopGroup</span>(<span class="hljs-number">0</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultThreadFactory</span>(<span class="hljs-string">&quot;boss&quot;</span>));<br><span class="hljs-type">NioEventLoopGroup</span> <span class="hljs-variable">worker</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">NioEventLoopGroup</span>(<span class="hljs-number">0</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultThreadFactory</span>(<span class="hljs-string">&quot;worker&quot;</span>));<br>serverBootstrap.group(boss, worker);<br></code></pre></td></tr></table></figure><p>打印的日志中便会出现线程名称。</p><h2 id="完善Handler名称-🛠️"><a href="#完善Handler名称-🛠️" class="headerlink" title="完善Handler名称 🛠️"></a>完善Handler名称 🛠️</h2><p>在debug模式下，能够看见handler的名称是默认使用类名，并且后面附带的数字意义是：</p><ul><li><p>$1 匿名内部类</p></li><li><p>#0 防止一个pipline中加入了多个handle</p></li></ul><p>通过给handler取名</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">pipeline.addLast(<span class="hljs-string">&quot;frameDecoder&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">OrderFrameDecoder</span>());<br></code></pre></td></tr></table></figure><p>如果有名称就不需要$1 #0 之类的了。</p><h2 id="netty日志的原理及使用-📚"><a href="#netty日志的原理及使用-📚" class="headerlink" title="netty日志的原理及使用 📚"></a>netty日志的原理及使用 📚</h2><h3 id="netty日志框架原理-🤔"><a href="#netty日志框架原理-🤔" class="headerlink" title="netty日志框架原理 🤔"></a>netty日志框架原理 🤔</h3><p>通过对不同条件的判断可以使用SLF4J、Log4J、Log4J2、Jdk的log.</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs java">codeprivate <span class="hljs-keyword">static</span> InternalLoggerFactory <span class="hljs-title function_">newDefaultFactory</span><span class="hljs-params">(String name)</span> &#123;<br>    Object f;<br>    <span class="hljs-keyword">try</span> &#123;<br>        f = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Slf4JLoggerFactory</span>(<span class="hljs-literal">true</span>);<br>        ((InternalLoggerFactory)f).newInstance(name).debug(<span class="hljs-string">&quot;Using SLF4J as the default logging framework&quot;</span>);<br>    &#125; <span class="hljs-keyword">catch</span> (Throwable var7) &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            f = Log4JLoggerFactory.INSTANCE;<br>            ((InternalLoggerFactory)f).newInstance(name).debug(<span class="hljs-string">&quot;Using Log4J as the default logging framework&quot;</span>);<br>        &#125; <span class="hljs-keyword">catch</span> (Throwable var6) &#123;<br>            <span class="hljs-keyword">try</span> &#123;<br>                f = Log4J2LoggerFactory.INSTANCE;<br>                ((InternalLoggerFactory)f).newInstance(name).debug(<span class="hljs-string">&quot;Using Log4J2 as the default logging framework&quot;</span>);<br>            &#125; <span class="hljs-keyword">catch</span> (Throwable var5) &#123;<br>                f = JdkLoggerFactory.INSTANCE;<br>                ((InternalLoggerFactory)f).newInstance(name).debug(<span class="hljs-string">&quot;Using java.util.logging as the default logging framework&quot;</span>);<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> (InternalLoggerFactory)f;<br>&#125;<br></code></pre></td></tr></table></figure><p>netty将所有log的依赖都增加进去了，但是在程序中还是看不见Slf4J是为什么？</p><p>因为在pom里面，使用了一个Optional参数标识了。导致了虽然项目依赖netty，但是项目中没有将slf4J下载下来。</p><h3 id="修改JDK-looger日志级别-⚙️"><a href="#修改JDK-looger日志级别-⚙️" class="headerlink" title="修改JDK looger日志级别 ⚙️"></a>修改JDK looger日志级别 ⚙️</h3><p>JDK自带的日志系统中的每一个日志记录器都可以有7个日志级别（LogLevel），从高级到低级，它们分别是：SEVERE、WARNING、INFO、CONFIG、FINE、FINER、FINEST。</p><p>进入JRE -&gt; lib 找到 logging.properties 文件</p><p>修改下面两行即可</p><figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs properties"><span class="hljs-comment">#日志级别</span><br><span class="hljs-attr">.level</span>= <span class="hljs-string">INFO</span><br><span class="hljs-comment">#控制台</span><br><span class="hljs-attr">java.util.logging.ConsoleHandler.level</span> = <span class="hljs-string">INFO</span><br></code></pre></td></tr></table></figure><h3 id="使用slf4j-log4j示例-🔌"><a href="#使用slf4j-log4j示例-🔌" class="headerlink" title="使用slf4j + log4j示例 🔌"></a>使用slf4j + log4j示例 🔌</h3><p>在项目的pom文件中添加依赖即可，如果是添加log4j，那么需要添加相应的配置文件。</p><h3 id="衡量好logging-handler的位置和级别-⚖️"><a href="#衡量好logging-handler的位置和级别-⚖️" class="headerlink" title="衡量好logging handler的位置和级别 ⚖️"></a>衡量好logging handler的位置和级别 ⚖️</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">pipeline.addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">LoggingHandler</span>(LogLevel.INFO));<br></code></pre></td></tr></table></figure><p>核心是设置好级别 LogLevel的级别</p><p>通过设置LogginHandler的级别，可以打印出不同阶段的日志。</p><p>可以在childHandler方法内，按照需求设置相应的log</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>Netty</category>
+      
+      <category>Tiny_Netty</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Netty</tag>
+      
+      <tag>Java</tag>
+      
+      <tag>Tiny_Netty</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>手写简易Netty_02——优化参数</title>
+    <link href="/2023/07/04/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-02%E2%80%94%E2%80%94%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/"/>
+    <url>/2023/07/04/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-02%E2%80%94%E2%80%94%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/</url>
+    
+    <content type="html"><![CDATA[<h1 id="优化参数"><a href="#优化参数" class="headerlink" title="优化参数"></a>优化参数</h1><h2 id="Linux-系统参数"><a href="#Linux-系统参数" class="headerlink" title="Linux 系统参数"></a>Linux 系统参数</h2><p>例如：&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv4&#x2F;tcp_keepalive_time</p><p>在进行 TCP 连接时，系统会为每个连接创建一个 socket 句柄，即文件句柄。然而，Linux 对每个进程所能打开的文件句柄数量有限制。当数量超出限制时，会出现 “Too many open file” 错误。</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">ulimit</span> -n [xxx]<br></code></pre></td></tr></table></figure><p>注意：ulimit 命令修改的数值仅对当前登录用户的当前使用环境有效。系统重启或用户退出后，该设置会失效。因此，可以将其作为程序启动脚本的一部分，在程序启动前执行。</p><h2 id="Netty-支持的系统参数"><a href="#Netty-支持的系统参数" class="headerlink" title="Netty 支持的系统参数"></a>Netty 支持的系统参数</h2><ul><li>例如：serverBootstrap.option(ChannelOption.SO_BACKLOG, 1024); 使用 SO_ 开头</li><li>SocketChannel -&gt; .childOption</li><li>ServerSocketChannel -&gt; .option</li></ul><p>讨论 Netty 支持的系统参数 (ChannelOption.[XXX])：</p><ul><li>不考虑 UDP: IP_MULTICAST_TTL</li><li>不考虑 OIO 编程： <ul><li>ChannelOption SO_TIMEOUT &#x3D; (“SO_TIMEOUT”); </li><li>OIO 是阻塞编程，默认永远阻塞，因此需要控制阻塞时间</li></ul></li></ul><h3 id="SocketChannel-的-7-个参数"><a href="#SocketChannel-的-7-个参数" class="headerlink" title="SocketChannel 的 7 个参数"></a>SocketChannel 的 7 个参数</h3><table><thead><tr><th>Netty 系统相关参数</th><th>功能</th><th>默认值</th></tr></thead><tbody><tr><td>SO_SNDBUF</td><td>TCP 数据发送缓冲区大小</td><td>&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv4&#x2F;tcp_wmem: 4K[min, default, max] 动态调整</td></tr><tr><td>SO_RCVBUF</td><td>TCP 数据接受缓冲区大小</td><td>&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv4&#x2F;tcp_rmem: 4K</td></tr><tr><td>SO_KEEPALIVE</td><td>TCP 层 keepalive</td><td>默认关闭</td></tr><tr><td>SO_REUSEADDR</td><td>地址重用，解决 “Address already in use” 的常见场景：多网卡（IP）绑定相同端口；使关闭连接后的端口早些时候可供再次使用</td><td>默认不开启 澄清：不是让 TCP 绑定完全相同 IP + Port 来重复启动</td></tr><tr><td>SO_LINGER</td><td>关闭 Socket 的延迟时间，默认禁用该功能，socket.close() 方法立即返回</td><td>默认不开启</td></tr><tr><td>IP_TOS</td><td>设置 IP 头部的 Type-of-Service 字段，用于描述 IP 包的优先级和 QoS 选项。例如倾向于延时还是吞吐量？</td><td>1000 - minimize delay<br>0100 - maximize throughput <br/>0010 - maximize reliability <br/>0001 - minimize monetary cost <br/>0000 - normal service （默认值） <br/>socket 选项的值是一个提示。实现可以忽略该值，或者忽略特定值</td></tr><tr><td>TCP_NODELAY</td><td>设置是否启用 Nagle 算法：使用该算法将小的碎片数据连接成更大的报文以提高发送效率</td><td>False 如果需要发送一些较小的报文，则需要禁用该算法</td></tr></tbody></table><h3 id="ServerSocketChannel-的-3-个参数"><a href="#ServerSocketChannel-的-3-个参数" class="headerlink" title="ServerSocketChannel 的 3 个参数"></a>ServerSocketChannel 的 3 个参数</h3><table><thead><tr><th>Netty 系统相关参数</th><th>功能</th><th>默认值</th></tr></thead><tbody><tr><td>SO_RCVBUF 接收数据缓冲区</td><td>为 Accept 创建的 socket channel 设置 SO_RCVBUF，”设置从此 ServerSocket 接受的套接字的 SO_RCVBUF 选项的默认建议值”</td><td>为什么有 SO_RCVBUF 而没有 SO_SNDBUF？我们可以在设置 sndbuf 之后再发送数据，这段时间可以自行控制</td></tr><tr><td>SO_REUSEADDR</td><td>是否可以重用端口</td><td>false</td></tr><tr><td>SO_BACKLOG</td><td>最大的等待连接数量</td><td>Netty 在 Linux 下获取的值（io.netty.util.NetUtil）：<br>1. 首先尝试：&#x2F;proc&#x2F;sys&#x2F;net&#x2F;core&#x2F;somaxcon <br>2. 然后尝试：sysctl <br>3. 如果都没有取到，使用默认值：128 <br>使用方式： <code>javaChannel().bind(localAddress, config.getBacklog());</code></td></tr></tbody></table><h3 id="参数调整要点"><a href="#参数调整要点" class="headerlink" title="参数调整要点"></a>参数调整要点</h3><ul><li>option&#x2F;childOption 区分不清：不会报错，但不会生效。</li><li>不了解的参数不要随意修改，避免过早优化。</li><li>最好可配置（动态配置更佳）。</li></ul><h3 id="需要调整的参数"><a href="#需要调整的参数" class="headerlink" title="需要调整的参数"></a>需要调整的参数</h3><p>最大打开文件数 • TCP_NODELAY • SO_BACKLOG • SO_REUSEADDR（视情况处理）</p><p>将 SO_BACKLOG 的默认值 128 调整为 1024</p><h3 id="具体调整"><a href="#具体调整" class="headerlink" title="具体调整"></a>具体调整</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs java">Server.java<br><span class="hljs-comment">// 系统参数</span><br>serverBootstrap.childOption(NioChannelOption.SO_KEEPALIVE, <span class="hljs-literal">true</span>);<br>serverBootstrap.option(NioChannelOption.SO_BACKLOG, <span class="hljs-number">1024</span>);<br></code></pre></td></tr></table></figure><h2 id="Netty核心参数"><a href="#Netty核心参数" class="headerlink" title="Netty核心参数"></a>Netty核心参数</h2><p>ChannelOption</p><ul><li>childOption(ChannelOption.[XXX], [YYY])</li><li>option(ChannelOption.[XXX], [YYY])</li></ul><p>System property</p><ul><li>Dio.netty.[XXX] &#x3D; [YYY]</li></ul><h3 id="ChannelOption（非系统相关：共11个）"><a href="#ChannelOption（非系统相关：共11个）" class="headerlink" title="ChannelOption（非系统相关：共11个）"></a>ChannelOption（非系统相关：共11个）</h3><table><thead><tr><th>Netty 系统相关参数</th><th>功能</th><th>默认值</th></tr></thead><tbody><tr><td>WRITE_BUFFER_WATER_MARK</td><td>高低水位线、间接防止写数据 OOM</td><td>32k → 64k 😮，为什么不大？每个连接都64k的话，那就太大了。</td></tr><tr><td>CONNECT_TIMEOUT_MILLIS</td><td>客户端连接服务器最大允许时间</td><td>30s ⏱️</td></tr><tr><td>MAX_MESSAGES_PER_READ</td><td>最大允许“连续”读次数</td><td>16次</td></tr><tr><td>WRITE_SPIN_COUNT</td><td>最大允许“连读”写次数</td><td>16次</td></tr><tr><td>ALLOCATOR ByteBuf</td><td>分配器</td><td>ByteBufAllocator.DEFAULT：大多池化、堆外</td></tr><tr><td>RCVBUF_ALLOCATOR</td><td>数据接收 ByteBuf 分配大小计算器（计算是否达到水位线） + 读次数控制器</td><td>AdaptiveRecvByteBufAllocator</td></tr><tr><td>AUTO_READ</td><td>是否监听“读事件”</td><td>默认：监听“读”事件： 设置此标记的方法也触发注册或移除读事件的监听</td></tr><tr><td>AUTO_CLOSE</td><td>“写数据”失败，是否关闭连接</td><td>默认打开，因为不关闭，下次还写，还是失败怎么办！</td></tr><tr><td>MESSAGE_SIZE_ESTIMATOR</td><td>数据（ByteBuf、FileRegion等）大小计算器</td><td>DefaultMessageSizeEstimator.DEFAULT 例如计算 ByteBuf: byteBuf.readableBytes()</td></tr><tr><td>SINGLE_EVENTEXECUTOR_PER _GROUP</td><td>当增加一个 handler 且指定 EventExecutorGroup 时：决定这个 handler 是否只用 EventExecutorGroup 中的一个固定的 EventExecutor （取决于next()实现）</td><td>默认：true: 这个 handler 不管是否共享，绑定上唯一一个 event executor.所以小名“pinEventExecutor” 没有指定 EventExecutorGroup，复用 channel 的 NioEventLoop</td></tr><tr><td>ALLOW_HALF_CLOSURE</td><td>关闭连接时，允许半关。 <a href="https://issues.jboss.org/browse/NETTY-236">https://issues.jboss.org/browse/NETTY-236</a></td><td>默认：不允许半关，如果允许，处理变成： shutdownInput(); pipeline.fireUserEventTriggered(ChannelInputShutd ownEvent.INSTANCE);</td></tr></tbody></table><h3 id="ALLOCATOR-与-RCVBUF-ALLOCATOR"><a href="#ALLOCATOR-与-RCVBUF-ALLOCATOR" class="headerlink" title="ALLOCATOR 与 RCVBUF_ALLOCATOR"></a>ALLOCATOR 与 RCVBUF_ALLOCATOR</h3><p><strong>功能关联：</strong></p><ul><li>ALLOCATOR 负责 ByteBuf 怎么分配（例如：从哪里分配），</li><li>RCVBUF_ALLOCATOR 负责计算为接收数据接分配多少 ByteBuf： 例如，AdaptiveRecvByteBufAllocator 有两大功能：<ul><li>动态计算下一次分配 bytebuf 的大小：guess()；</li><li>判断是否可以继续读：continueReading()</li></ul></li></ul><p><strong>代码关联：</strong></p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java">io.netty.channel.AdaptiveRecvByteBufAllocator.<span class="hljs-type">HandleImpl</span> <span class="hljs-variable">handle</span> <span class="hljs-operator">=</span> AdaptiveRecvByteBufAllocator.newHandle(); <br><br><span class="hljs-type">ByteBuf</span> <span class="hljs-variable">byteBuf</span> <span class="hljs-operator">=</span> handle.allocate(ByteBufAllocator)<br></code></pre></td></tr></table></figure><p>其中： allocate的实现：</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">ByteBuf <span class="hljs-title function_">allocate</span><span class="hljs-params">(ByteBufAllocator alloc)</span> &#123; <span class="hljs-keyword">return</span> alloc.ioBuffer(guess()); &#125;<br></code></pre></td></tr></table></figure><h3 id="在TinyNetty中调整"><a href="#在TinyNetty中调整" class="headerlink" title="在TinyNetty中调整"></a>在TinyNetty中调整</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs java">Client.java<br><span class="hljs-comment">//调整连接超时</span><br>bootstrap.option(NioChannelOption.CONNECT_TIMEOUT_MILLIS, <span class="hljs-number">10</span> * <span class="hljs-number">1000</span>);<br></code></pre></td></tr></table></figure><h2 id="三个让费脑的参数"><a href="#三个让费脑的参数" class="headerlink" title="三个让费脑的参数"></a>三个让费脑的参数</h2><p>大多数情况下都可以不予考虑</p><h3 id="地址重用：SO-REUSEADDR-🔄"><a href="#地址重用：SO-REUSEADDR-🔄" class="headerlink" title="地址重用：SO_REUSEADDR 🔄"></a>地址重用：SO_REUSEADDR 🔄</h3><p><code>SO_REUSEADDR</code>是一个套接字选项，用于控制套接字地址的重用。在TCP连接关闭后，操作系统会在一段时间内保持该套接字地址（IP地址+端口号）的占用状态，以确保任何延迟到达的数据能够正确传递到应用程序。</p><p>在TCP连接关闭流程中，客户端向服务器发送ack。此时，客户端会等待2MSL，以确保服务器正确接收到该ack。如果服务器未收到ack，则会发送超时重传的FIN消息，客户端将再次发送ack。如果服务器接收到了ack，则不会发送任何消息。</p><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-02%E2%80%94%E2%80%94%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/image-20230624160306498.png" alt="image-20230624160306498"></p><p>因此，客户端需要等待的时间为：</p><p><strong>去向ack消息最大存活时间（MSL）+ 来向FIN消息最大存活时间（MSL） &#x3D; 2MSL</strong></p><p>通常为60秒，但在网络质量较好的情况下，可以缩短到1秒。相信1秒的TIME_WAIT足够了。</p><p>当你将 <code>SO_REUSEADDR</code> 选项设置为 <code>true</code> 时，表示允许在使用过程中关闭的套接字被重新绑定到同一个地址。这样，你就可以立即重新绑定相同的地址，而无需等待保持期结束。这在某些特定的应用场景中非常有用，比如服务器需要快速重启或频繁绑定相同的地址。</p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">serverBootstrap.option(ChannelOption.SO_REUSEADDR, <span class="hljs-literal">true</span>);<br></code></pre></td></tr></table></figure><h3 id="SO-LINGER：关闭时间-🌅"><a href="#SO-LINGER：关闭时间-🌅" class="headerlink" title="SO_LINGER：关闭时间 🌅"></a>SO_LINGER：关闭时间 🌅</h3><p><code>SO_LINGER</code>定义了关闭套接字时是否立即关闭或等待一段时间。具体而言，<code>SO_LINGER</code>选项控制操作系统在关闭套接字时的行为。</p><p>默认情况下，当关闭套接字时，操作系统会尝试发送任何待发送的数据，并立即关闭套接字。这意味着，如果还有未发送的数据，它们可能会丢失。</p><p>通过设置<code>SO_LINGER</code>选项，你可以改变这种默认行为。当将<code>SO_LINGER</code>设置为非零的超时值时，关闭套接字的行为将发生变化。具体而言，当你关闭套接字时，操作系统会尝试发送所有待发送的数据，并等待指定的超时时间。</p><p>需要注意的是，<code>SO_LINGER</code>选项可能会影响行为和延迟。如果存在未发送完的数据，等待超时时间可能会导致套接字关闭的延迟。因此，在使用<code>SO_LINGER</code>选项时，你需要根据自己的需求仔细评估和权衡。</p><p>另外，将<code>timeout</code>设置为0表示关闭套接字时立即丢弃未发送的数据，并立即关闭套接字。</p><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-02%E2%80%94%E2%80%94%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/image-20230624161738285.png" alt="image-20230624161738285"></p><h4 id="如何判断是否需要设置？"><a href="#如何判断是否需要设置？" class="headerlink" title="如何判断是否需要设置？"></a>如何判断是否需要设置？</h4><ol><li>重要数据的完整性</li><li>如果你的应用程序需要在关闭套接字之前执行特定的清理操作或发送最后的消息，那么设置<code>SO_LINGER</code>可以提供可控的关闭行为。</li><li>延迟和性能：需要注意的是，设置<code>SO_LINGER</code>可能会导致套接字关闭的延迟。如果你的应用程序对延迟非常敏感，或需要快速释放资源而快速关闭套接字，那么设置<code>SO_LINGER</code>可能不是一个好的选择。</li></ol><h3 id="ALLOW-HALF-CLOSURE：半关闭-🤝"><a href="#ALLOW-HALF-CLOSURE：半关闭-🤝" class="headerlink" title="ALLOW_HALF_CLOSURE：半关闭 🤝"></a>ALLOW_HALF_CLOSURE：半关闭 🤝</h3><p><code>ALLOW_HALF_CLOSURE</code>是Netty中的一个选项，用于控制是否允许半关闭（Half Closure）操作。半关闭是指在一个TCP连接中，一方关闭了输出流（发送方），但保持输入流（接收方）仍然打开。</p><p>默认情况下，Netty不允许半关闭操作。这意味着，当一方关闭输出流时，另一方将接收到连接关闭的事件，从而关闭整个连接。这种行为符合TCP协议的规范，因为一方关闭输出流意味着不再发送数据，连接可以被认为是完全关闭了。</p><p>然而，在某些情况下，你可能希望允许半关闭操作。例如，如果你的应用程序中的一方关闭了输出流，但仍希望接收另一方发送的数据，那么你可以使用<code>ALLOW_HALF_CLOSURE</code>选项。</p><p>需要注意的是，在启用半关闭后，在处理连接关闭事件时要特别小心。你可能需要检查连接的状态，以确定是完全关闭连接还是仅关闭输出流。</p><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-02%E2%80%94%E2%80%94%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/image-20230624161951034.png" alt="image-20230624161951034"></p><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs java">channel.pipeline().option(ChannelOption.ALLOW_HALF_CLOSURE, <span class="hljs-literal">true</span>);<br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    <categories>
+      
+      <category>Netty</category>
+      
+      <category>Tiny_Netty</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Netty</tag>
+      
+      <tag>Java</tag>
+      
+      <tag>Tiny_Netty</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>手写简易netty_01——优化参数</title>
+    <link href="/2023/07/04/%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/"/>
+    <url>/2023/07/04/%E4%BC%98%E5%8C%96%E5%8F%82%E6%95%B0/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>手写简易Netty_01——搭建项目</title>
+    <link href="/2023/07/03/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty_01%E2%80%94%E2%80%94%E6%90%AD%E5%BB%BA%E9%A1%B9%E7%9B%AE/"/>
+    <url>/2023/07/03/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty_01%E2%80%94%E2%80%94%E6%90%AD%E5%BB%BA%E9%A1%B9%E7%9B%AE/</url>
+    
+    <content type="html"><![CDATA[<h1 id="基本步骤-🚀"><a href="#基本步骤-🚀" class="headerlink" title="基本步骤 🚀"></a>基本步骤 🚀</h1><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-01/image-20230622192508774-16883882639981.png" alt="image-20230622192508774"></p><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-01/image-20230622192533845-16883882639992.png" alt="image-20230622192533845"></p><h1 id="案例介绍和设计数据结构-💡"><a href="#案例介绍和设计数据结构-💡" class="headerlink" title="案例介绍和设计数据结构 💡"></a>案例介绍和设计数据结构 💡</h1><p>我们将编写一个服务器（server）和客户端（client），以支持网络通信，包括请求和响应。同时设计了两个接口，用于授权和保持连接的请求和响应。</p><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-01/image-20230622193251995.png" alt="image-20230622193251995"></p><p>消息体（body）使用 JSON 格式，表示操作（operation）的请求和响应。</p><p>消息头（header）中有多种操作类型（OP），需要定义不同的操作代码（OP_Code）。版本（version）用于表示版本号和处理兼容性。流ID（streamID）用作唯一标识符。</p><p>长度字段表示消息的长度，用于表示一个帧（frame）。</p><p><img src="/img/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty-01/image-20230622193446330.png" alt="image-20230622193446330"></p><p>我们不深入业务逻辑，只关注思想和流程。</p><h1 id="常见易错点-🔍"><a href="#常见易错点-🔍" class="headerlink" title="常见易错点 🔍"></a>常见易错点 🔍</h1><ul><li><p><code>LengthFieldBasedFrameDecoder</code> 中未正确设置 <code>initialBytesToStrip</code>。如果未设置，解决粘包和半包问题时，仍然会携带长度字段。</p></li><li><p><code>ChannelHandler</code> 的顺序不正确：</p><ul><li>编写顺序应按照1~5进行编写，但执行顺序是 1 -&gt; 4 -&gt; 2 -&gt; 3 -&gt; 5。</li></ul><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-number">1.</span> pipeline.addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OrderFrameDecoder</span>());<br><span class="hljs-number">2.</span> pipeline.addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OrderFrameEncoder</span>());<br><span class="hljs-number">3.</span> pipeline.addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OrderProtocolEncoder</span>());<br><span class="hljs-number">4.</span> pipeline.addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OrderProtocolDecoder</span>());<br><span class="hljs-number">5.</span> pipeline.addLast(<span class="hljs-keyword">new</span> <span class="hljs-title class_">OrderServerProcessHandler</span>());<br></code></pre></td></tr></table></figure></li><li><p><code>ChannelHandler</code> 共享与非共享问题（线程安全）：</p><ul><li>例如，<code>pipeline.addLast(new LoggingHandler(LogLevel.INFO));</code> 中的 <code>LoggingHandler</code> 是可以共享的，因此不需要在每个 <code>ChannelHandler</code> 中创建。但在多线程环境中，不应该共享的 <code>Handler</code> 却被共享了，就会出现线程问题。</li></ul></li><li><p>分配 <code>ByteBuf</code>：应使用 <code>ByteBufAllocator.DEFAULT</code> 等分配器，而不是使用 <code>ChannelHandlerContext.alloc()</code>。在分配 <code>ByteBuf</code> 时，无论是堆外内存还是堆内内存，都可以使用。如果切换了实现方式，那么使用了 <code>ByteBufAllocator.DEFAULT</code> 的地方，实现方式不一致，就会出现问题。</p></li><li><p>未考虑释放 <code>ByteBuf</code>：</p><ul><li>即使不接收消息，仍然应调用 <code>release</code> 方法进行释放。</li></ul></li><li><p>错误地认为 <code>ChannelHandlerContext.write(msg)</code> 就会将数据写出：</p><ul><li><code>write</code> 方法只是将消息添加到队列中。</li><li>该方法仅在当前 <code>pipeline</code> 的位置寻找下一个符合条件的 <code>handler</code>。</li></ul></li><li><p>误用 <code>ChannelHandlerContext.channel().writeAndFlush(msg)</code>：</p><ul><li>此消息发送会使整个 <code>pipeline</code> 重新执行一遍。如果在中间的处理器执行了该方法，将会从头开始执行，导致死循环。</li></ul></li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>Netty</category>
+      
+      <category>Tiny_Netty</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Netty</tag>
+      
+      <tag>Java</tag>
+      
+      <tag>Tiny_Netty</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Netty常见问题</title>
+    <link href="/2023/06/21/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/"/>
+    <url>/2023/06/21/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Netty常见问题"><a href="#Netty常见问题" class="headerlink" title="Netty常见问题"></a>Netty常见问题</h1><h3 id="1-Could-not-find-artifact-io-netty-netty-tcnative-jar-windows-x86-32-2-0-25-Final-in-centra"><a href="#1-Could-not-find-artifact-io-netty-netty-tcnative-jar-windows-x86-32-2-0-25-Final-in-centra" class="headerlink" title="1. Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centra"></a>1. Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centra</h3><p>netty编译时，如果是32位系统，则会报错”Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centra“。</p><p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614154337227.png" alt="image-20230614154337227"></p><p>在netty-parent模块下pom.xml文件第306行开始，能够看见tcnative.classifier。其中，classifier表示是一个二级分类（区分不同的jdk，版本号等）</p><p>在这里是想要通过os.detected.classifier获取一个classifier，以达到获取系统版本号的的目的。</p><p><strong>解决方法：</strong></p><ol><li>将JDK、IDEA、操作系统这三者都更改为64位，这样能够保证下载的是64为jar包</li><li>直接指定jar包的版本为32位。</li></ol><h3 id="2-java-程序包io-netty-util-collection不存在"><a href="#2-java-程序包io-netty-util-collection不存在" class="headerlink" title="2.java:程序包io.netty.util.collection不存在"></a>2.java:程序包io.netty.util.collection不存在</h3><p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614161752830.png" alt="image-20230614161752830"></p><p>在netty-common模块内，会通过模板和脚本（templates和script包）生成java文件。因此也能在pom.xml文件中找到驱动脚本执行的groovy包，设置是在编译的时候执行codegen.groovy文件。</p><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">executions</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">execution</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>generate-collections<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">phase</span>&gt;</span>generate-sources<span class="hljs-tag">&lt;/<span class="hljs-name">phase</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">goals</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">goal</span>&gt;</span>execute<span class="hljs-tag">&lt;/<span class="hljs-name">goal</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">goals</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">source</span>&gt;</span>$&#123;project.basedir&#125;/src/main/script/codegen.groovy<span class="hljs-tag">&lt;/<span class="hljs-name">source</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">execution</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">executions</span>&gt;</span><br></code></pre></td></tr></table></figure><p><strong>解决方案</strong>：但是有时候不会自动编译，可以自己直接执行编译命令，也可也在idea中点击maven compile执行。代码将会生成到target里面。</p><p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614162645764.png" alt="image-20230614162645764"></p><p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230617222109130.png" alt="image-20230617222109130"></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>Netty</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Netty</tag>
+      
+      <tag>java</tag>
+      
+    </tags>
     
   </entry>
   
@@ -39,11 +172,11 @@
       
       <tag>Netty</tag>
       
+      <tag>Java</tag>
+      
       <tag>极客时间</tag>
       
       <tag>源码</tag>
-      
-      <tag>Java</tag>
       
     </tags>
     
@@ -74,11 +207,11 @@
       
       <tag>Netty</tag>
       
+      <tag>Java</tag>
+      
       <tag>极客时间</tag>
       
       <tag>源码</tag>
-      
-      <tag>Java</tag>
       
     </tags>
     
@@ -109,11 +242,11 @@
       
       <tag>Netty</tag>
       
+      <tag>Java</tag>
+      
       <tag>极客时间</tag>
       
       <tag>源码</tag>
-      
-      <tag>Java</tag>
       
     </tags>
     

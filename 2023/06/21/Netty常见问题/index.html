@@ -16,21 +16,28 @@
   <meta name="author" content="HuanKang Zeng">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+    <meta name="description" content="Netty常见问题1. Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centranetty编译时，如果是32位系统，则会报错”Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Fi">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://muxiang123.github.io/2023/06/21/hello-world/index.html">
+<meta property="og:title" content="Netty常见问题">
+<meta property="og:url" content="http://muxiang123.github.io/2023/06/21/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="MuXiang Blog">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="Netty常见问题1. Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centranetty编译时，如果是32位系统，则会报错”Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Fi">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-06-21T13:43:44.385Z">
-<meta property="article:modified_time" content="2023-06-21T13:43:44.385Z">
+<meta property="og:image" content="http://muxiang123.github.io/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614154337227.png">
+<meta property="og:image" content="http://muxiang123.github.io/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614161752830.png">
+<meta property="og:image" content="http://muxiang123.github.io/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614162645764.png">
+<meta property="og:image" content="http://muxiang123.github.io/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230617222109130.png">
+<meta property="article:published_time" content="2023-06-21T14:06:22.000Z">
+<meta property="article:modified_time" content="2023-07-04T02:18:10.444Z">
 <meta property="article:author" content="HuanKang Zeng">
+<meta property="article:tag" content="Netty">
+<meta property="article:tag" content="java">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://muxiang123.github.io/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614154337227.png">
   
   
   
-  <title>Hello World - MuXiang Blog</title>
+  <title>Netty常见问题 - MuXiang Blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -196,7 +203,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Hello World"></span>
+            <span id="subtitle" data-typed-text="Netty常见问题"></span>
           
         </div>
 
@@ -207,7 +214,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-06-21 21:43" pubdate>
+        <time datetime="2023-06-21 22:06" pubdate>
           2023年6月21日 晚上
         </time>
       </span>
@@ -219,7 +226,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          367 字
+          1k 字
         
       </span>
     
@@ -230,7 +237,7 @@
         
         
         
-          4 分钟
+          9 分钟
         
       </span>
     
@@ -268,24 +275,27 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Hello World</h1>
+            <h1 style="display: none">Netty常见问题</h1>
             
             
               <div class="markdown-body">
                 
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
+                <h1 id="Netty常见问题"><a href="#Netty常见问题" class="headerlink" title="Netty常见问题"></a>Netty常见问题</h1><h3 id="1-Could-not-find-artifact-io-netty-netty-tcnative-jar-windows-x86-32-2-0-25-Final-in-centra"><a href="#1-Could-not-find-artifact-io-netty-netty-tcnative-jar-windows-x86-32-2-0-25-Final-in-centra" class="headerlink" title="1. Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centra"></a>1. Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centra</h3><p>netty编译时，如果是32位系统，则会报错”Could not find artifact io.netty:netty-tcnative:jar:windows-x86_32:2.0.25.Final in centra“。</p>
+<p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614154337227.png" srcset="/img/loading.gif" lazyload alt="image-20230614154337227"></p>
+<p>在netty-parent模块下pom.xml文件第306行开始，能够看见tcnative.classifier。其中，classifier表示是一个二级分类（区分不同的jdk，版本号等）</p>
+<p>在这里是想要通过os.detected.classifier获取一个classifier，以达到获取系统版本号的的目的。</p>
+<p><strong>解决方法：</strong></p>
+<ol>
+<li>将JDK、IDEA、操作系统这三者都更改为64位，这样能够保证下载的是64为jar包</li>
+<li>直接指定jar包的版本为32位。</li>
+</ol>
+<h3 id="2-java-程序包io-netty-util-collection不存在"><a href="#2-java-程序包io-netty-util-collection不存在" class="headerlink" title="2.java:程序包io.netty.util.collection不存在"></a>2.java:程序包io.netty.util.collection不存在</h3><p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614161752830.png" srcset="/img/loading.gif" lazyload alt="image-20230614161752830"></p>
+<p>在netty-common模块内，会通过模板和脚本（templates和script包）生成java文件。因此也能在pom.xml文件中找到驱动脚本执行的groovy包，设置是在编译的时候执行codegen.groovy文件。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">executions</span>&gt;</span><br>  <span class="hljs-tag">&lt;<span class="hljs-name">execution</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">id</span>&gt;</span>generate-collections<span class="hljs-tag">&lt;/<span class="hljs-name">id</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">phase</span>&gt;</span>generate-sources<span class="hljs-tag">&lt;/<span class="hljs-name">phase</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">goals</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">goal</span>&gt;</span>execute<span class="hljs-tag">&lt;/<span class="hljs-name">goal</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">goals</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">source</span>&gt;</span>$&#123;project.basedir&#125;/src/main/script/codegen.groovy<span class="hljs-tag">&lt;/<span class="hljs-name">source</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>  <span class="hljs-tag">&lt;/<span class="hljs-name">execution</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">executions</span>&gt;</span><br></code></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<p><strong>解决方案</strong>：但是有时候不会自动编译，可以自己直接执行编译命令，也可也在idea中点击maven compile执行。代码将会生成到target里面。</p>
+<p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230614162645764.png" srcset="/img/loading.gif" lazyload alt="image-20230614162645764"></p>
+<p><img src="/img/Netty%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/image-20230617222109130.png" srcset="/img/loading.gif" lazyload alt="image-20230617222109130"></p>
 
                 
               </div>
@@ -294,6 +304,36 @@
             <div>
               <div class="post-metas my-3">
   
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Netty/" class="category-chain-item">Netty</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Netty/">#Netty</a>
+      
+        <a href="/tags/java/">#java</a>
+      
+    </div>
   
 </div>
 
@@ -303,8 +343,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Hello World</div>
-      <div>http://muxiang123.github.io/2023/06/21/hello-world/</div>
+      <div>Netty常见问题</div>
+      <div>http://muxiang123.github.io/2023/06/21/Netty常见问题/</div>
     </div>
     <div class="license-meta">
       
@@ -347,6 +387,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2023/07/03/%E6%89%8B%E5%86%99%E7%AE%80%E6%98%93Netty_01%E2%80%94%E2%80%94%E6%90%AD%E5%BB%BA%E9%A1%B9%E7%9B%AE/" title="手写简易Netty_01——搭建项目">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">手写简易Netty_01——搭建项目</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
